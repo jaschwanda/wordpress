@@ -6,7 +6,7 @@
 Author:            Jim Schwanda
 Author URI:        https://www.usi2solve.com/leader
 Copyright:         2023 by Jim Schwanda.
-Description:       This plugin provides database logging and is developed and maintained by Universal Solutions. The WordPress database connection parameters must be defined before this plugin is loaded.
+Description:       This plugin provides logging to the database for debugging and tracing purposes. The WordPress database connection parameters must be defined before this plugin is loaded. The USI::log() plugin is is developed and maintained by Universal Solutions. 
 Donate link:       https://www.usi2solve.com/donate/wordpress-solutions
 License:           GPL-3.0
 License URI:       https://github.com/jaschwanda/wordpress-solutions/blob/master/LICENSE.md
