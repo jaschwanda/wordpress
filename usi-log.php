@@ -15,7 +15,7 @@ Plugin URI:        https://github.com/jaschwanda/wordpress-solutions
 Requires at least: 5.0
 Requires PHP:      7.0.0
 Tested up to:      5.3.2
-Version:           1.0.0
+Version:           1.1.0
 Warranty:          This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
 
@@ -23,7 +23,7 @@ class USI_Dbs_Exception extends Exception { } // Class USI_Dbs_Exception;
 
 final class USI {
 
-   const VERSION = '1.0.0 (2023-07-03)';
+   const VERSION = '1.1.0 (2023-09-15)';
 
    private static $info   = null;
    private static $mysqli = null;
@@ -115,5 +115,15 @@ final class USI {
    } // log2();
 
 } // Class USI
+
+spl_autoload_register(
+   function ($class_name) {
+      $file = str_replace('_', '-', strtolower($class_name)) . '.php';
+      if ('usi-' != substr($file, 0, 4)) return;
+      $path = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . substr($file, 0, strpos($file, '-solutions', 5) + 10) . DIRECTORY_SEPARATOR . $file;
+      if (!file_exists($path)) return;
+      include $path;
+   }
+);
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>
