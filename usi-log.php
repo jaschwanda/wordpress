@@ -15,7 +15,7 @@ Plugin URI:        https://github.com/jaschwanda/wordpress-solutions
 Requires at least: 5.0
 Requires PHP:      7.0.0
 Tested up to:      5.3.2
-Version:           1.1.0
+Version:           1.1.1
 Warranty:          This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
 
@@ -23,7 +23,7 @@ class USI_Dbs_Exception extends Exception { } // Class USI_Dbs_Exception;
 
 final class USI {
 
-   const VERSION = '1.1.0 (2023-09-15)';
+   const VERSION = '1.1.1 (2023-10-04)';
 
    private static $info   = null;
    private static $mysqli = null;
@@ -39,7 +39,7 @@ final class USI {
          self::$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
          if (self::$mysqli->connect_errno) throw new USI_Dbs_Exception('HOST=' . DB_HOST . ':NAME=' . DB_NAME . ':USER=' . DB_USER . ':errno=' . self::$mysqli->connect_errno . ':error=' . self::$mysqli->connect_error);
       }
-      return(self::$mysqli);
+      return self::$mysqli;
    } // dbs_connect();
 
    public static function log() {
@@ -95,16 +95,26 @@ final class USI {
          $info .= PHP_EOL . 'exception=' . $e->GetMessage();
       }
 
-      if (!self::$mysqli) self::$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-      if (!self::$mysqli_stmt) {
-         global $table_prefix;
-         self::$mysqli_stmt = new mysqli_stmt(self::$mysqli);
-         self::$mysqli_stmt->prepare('INSERT INTO `' . $table_prefix . 'USI_log` (`user_id`, `action`) VALUES (?, ?)');     
-         self::$mysqli_stmt->bind_param('is', self::$user, self::$info);
-      }
-      self::$info = substr($info, 0, 16777215); // If `action` field is MEDIUMTEXT;
+      self::$info = substr($info, 0, 16777215); // `action` field is MEDIUMTEXT;
       self::$user = function_exists('get_current_user_id') ? get_current_user_id() : 0;
-      self::$mysqli_stmt->execute();
+
+      if (defined('USI_LOG_TABLE')) try {
+         if (!self::$mysqli) {
+            global $table_prefix;
+            self::$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+            self::$mysqli_stmt = new mysqli_stmt(self::$mysqli);
+            self::$mysqli_stmt->prepare('INSERT INTO `' . $table_prefix . USI_LOG_TABLE . '` (`user_id`, `action`) VALUES (?, ?)');     
+            self::$mysqli_stmt->bind_param('is', self::$user, self::$info);
+         }
+         self::$mysqli_stmt->execute(); 
+      } catch (\Throwable $e) { }
+      
+
+      if (defined('USI_LOG_FILE')) try {
+         $fh = fopen(USI_LOG_FILE, 'a');
+         fwrite($fh, self::timestamp() . ' (' . self::$user . ') ' . self::$info . PHP_EOL);
+         fclose($fh);
+      } catch (\Throwable $e) { }
 
    } // log();
 
@@ -114,15 +124,26 @@ final class USI {
       self::$offset = 0;
    } // log2();
 
+   public static function timestamp() {
+      return (new DateTime(null, defined('USI_LOG_TIME') ? new DateTimeZone(USI_LOG_TIME) : null))->format('Y-m-d H:i:s');
+   } // timestamp();
+
 } // Class USI
 
 spl_autoload_register(
    function ($class_name) {
       $file = str_replace('_', '-', strtolower($class_name)) . '.php';
-      if ('usi-' != substr($file, 0, 4)) return;
-      $path = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . substr($file, 0, strpos($file, '-solutions', 5) + 10) . DIRECTORY_SEPARATOR . $file;
-      if (!file_exists($path)) return;
-      include $path;
+      if ('usi-' == substr($file, 0, 4)) {
+         $path = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . substr($file, 0, strpos($file, '-solutions', 5) + 10) . DIRECTORY_SEPARATOR . $file;
+         if (file_exists($path)) include $path;
+         return;
+      }
+      if (defined('USI_PHP_ROOT')) {
+         if (USI_PHP_SITE . '-' == substr($file, 0, strlen(USI_PHP_SITE) + 1)) {
+            $path = USI_PHP_ROOT . DIRECTORY_SEPARATOR . USI_PHP_SITE . DIRECTORY_SEPARATOR . $file;
+            if (file_exists($path)) include $path;
+         }
+      }
    }
 );
 
