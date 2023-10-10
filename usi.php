@@ -6,16 +6,16 @@
 Author:            Jim Schwanda
 Author URI:        https://www.usi2solve.com/leader
 Copyright:         2023 by Jim Schwanda.
-Description:       This plugin provides logging to the database for debugging and tracing purposes. The WordPress database connection parameters must be defined before this plugin is loaded. The USI::log() plugin is is developed and maintained by Universal Solutions. 
+Description:       This plugin provides autoloading, time stamping, and logging to a file and database for debugging and tracing purposes. The WordPress database connection parameters (DB_xxx) must be defined before this plugin is loaded if used outside of WordPress. This plugin is developed and maintained by Universal Solutions. 
 Donate link:       https://www.usi2solve.com/donate/wordpress-solutions
 License:           GPL-3.0
-License URI:       https://github.com/jaschwanda/wordpress-solutions/blob/master/LICENSE.md
-Plugin Name:       USI::log()
-Plugin URI:        https://github.com/jaschwanda/wordpress-solutions
+License URI:       https://github.com/jaschwanda/wordpress/blob/master/LICENSE.md
+Plugin Name:       USI WordPress
+Plugin URI:        https://github.com/jaschwanda/wordpress
 Requires at least: 5.0
 Requires PHP:      7.0.0
 Tested up to:      5.3.2
-Version:           1.1.1
+Version:           1.2.0
 Warranty:          This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
 
@@ -23,7 +23,7 @@ class USI_Dbs_Exception extends Exception { } // Class USI_Dbs_Exception;
 
 final class USI {
 
-   const VERSION = '1.1.1 (2023-10-04)';
+   const VERSION = '1.2.0 (2023-10-10)';
 
    private static $info   = null;
    private static $mysqli = null;
@@ -133,20 +133,14 @@ final class USI {
 spl_autoload_register(
    function ($class_name) {
       $file = str_replace('_', '-', strtolower($class_name)) . '.php';
-      // usi::log('$class_name=', $class_name, ' $file=', $file);
       if ('usi-' == substr($file, 0, 4)) {
          $path = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . substr($file, 0, strpos($file, '-solutions', 5) + 10) . DIRECTORY_SEPARATOR . $file;
-         // usi::log('$psth=', $path, ' exists=', (file_exists($path) ? 'yes' : 'no'));
-         if (file_exists($path)) include $path;
-         return;
+      } else if (defined('USI_PHP_ROOT') && (USI_PHP_SITE . '-' == substr($file, 0, strlen(USI_PHP_SITE) + 1))) {
+         $path = USI_PHP_ROOT . DIRECTORY_SEPARATOR . USI_PHP_SITE . DIRECTORY_SEPARATOR . $file;
+      } else {
+         return; // usi::log('$class_name=', $class_name, ' $file=', $file);
       }
-      if (defined('USI_PHP_ROOT')) {
-         if (USI_PHP_SITE . '-' == substr($file, 0, strlen(USI_PHP_SITE) + 1)) {
-            $path = USI_PHP_ROOT . DIRECTORY_SEPARATOR . USI_PHP_SITE . DIRECTORY_SEPARATOR . $file;
-            // usi::log('$path=', $path, ' exists=', (file_exists($path) ? 'yes' : 'no'));
-            if (file_exists($path)) include $path;
-         }
-      }
+      if (file_exists($path)) include $path; // usi::log('$class_name=', $class_name, ' $file=', $file, ' $path=', $path, ' exists=', (file_exists($path) ? 'yes' : 'no'));
    }
 );
 
