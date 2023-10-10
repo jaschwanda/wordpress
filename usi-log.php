@@ -133,14 +133,17 @@ final class USI {
 spl_autoload_register(
    function ($class_name) {
       $file = str_replace('_', '-', strtolower($class_name)) . '.php';
+      // usi::log('$class_name=', $class_name, ' $file=', $file);
       if ('usi-' == substr($file, 0, 4)) {
          $path = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . substr($file, 0, strpos($file, '-solutions', 5) + 10) . DIRECTORY_SEPARATOR . $file;
+         // usi::log('$psth=', $path, ' exists=', (file_exists($path) ? 'yes' : 'no'));
          if (file_exists($path)) include $path;
          return;
       }
       if (defined('USI_PHP_ROOT')) {
          if (USI_PHP_SITE . '-' == substr($file, 0, strlen(USI_PHP_SITE) + 1)) {
             $path = USI_PHP_ROOT . DIRECTORY_SEPARATOR . USI_PHP_SITE . DIRECTORY_SEPARATOR . $file;
+            // usi::log('$path=', $path, ' exists=', (file_exists($path) ? 'yes' : 'no'));
             if (file_exists($path)) include $path;
          }
       }
