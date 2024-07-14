@@ -12,9 +12,6 @@ License:           GPL-3.0
 License URI:       https://github.com/jaschwanda/wordpress/blob/master/LICENSE.md
 Plugin Name:       USI WordPress
 Plugin URI:        https://github.com/jaschwanda/wordpress
-Requires at least: 5.0
-Requires PHP:      7.0.0
-Tested up to:      5.3.2
 Version:           1.2.0
 Warranty:          This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
